@@ -1,0 +1,11 @@
+<svg width="800" height="100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff4b4b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7b2bf9;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <text x="50%" y="50%" font-family="Arial" font-size="48" fill="url(#gradient)" text-anchor="middle" alignment-baseline="middle">
+    DEEP ANAL: Steganography Analysis
+  </text>
+</svg>
