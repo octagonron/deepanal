@@ -1,0 +1,79 @@
+ 
+
+# **🔥 DEEP ANAL: Hardcore Stego Analysis 🔥**
+### **All-in-One Automated Steganography Scanner & Visualization Suite**
+🚀 **DEEP ANAL** (Advanced Network Analysis & Layering) is a **next-gen** steganography analysis tool that dynamically swaps between PNG and JPEG-based tools depending on input file types. This project seamlessly integrates **top-tier CLI stego tools** with **interactive graph visualizations**, making it the **ultimate toolkit for forensic analysis, CTFs, and cybersecurity research.** 🔍🕵️‍♂️
+
+---
+
+## **✨ Key Features**
+✅ **Automated Tool Switching** – Automatically swaps out PNG-specific tools when JPEGs are detected, ensuring accurate analysis.  
+✅ **Multi-Format Support** – Supports **PNG, JPEG, and Video Stego** (MP4) with real-time **adaptive graph visualizations.**  
+✅ **Top-Tier CLI Integration** – Runs **6+ steganography CLI tools**, including `StegSolve`, `StegoVeritas`, `binwalk`, and `exiftool`.  
+✅ **Stego Graphing & Visualization** – Displays **LSB data, entropy analysis, frequency graphs, and string extractions** dynamically.  
+✅ **Customizable & Expandable** – Supports **plug-and-play CLI tools**, allowing for **future stego techniques**.  
+
+---
+
+## **🛠 Current Tools Integrated**
+| **Format** | **Primary Tools Used** |
+|-----------|----------------------|
+| **PNG**  | `zsteg`, `pngcheck`, `binwalk`, `exiftool`, `StegoVeritas`, `xxd` |
+| **JPEG** | `StegSolve`, `StegoVeritas`, `binwalk`, `exiftool`, `xxd` |
+| **Video** | `ffmpeg`, `binwalk`, `stegdetect`, `strings`, `exiftool` |
+
+💡 **Dynamic Tool Switching** – If a PNG is uploaded, it prioritizes **PNG-specific** tools; if a JPEG is uploaded, **JPEG-focused** tools replace them. Graphs adapt to match analysis type.  
+
+---
+
+## **📊 Visualizations Included**
+📌 **Hex Dump Output** (LSB Data Extraction)  
+📌 **Frequency Analysis** (Byte-Level Detection)  
+📌 **String Analysis** (Keyword and ASCII Stego)  
+📌 **Pixel Entropy Maps** (High-Resolution Visualizations)  
+📌 **Histogram Analysis** (Color Channel Manipulation Detection)  
+
+---
+
+## **🚀 How to Use**
+1️⃣ **Upload an image or video** (PNG, JPEG, MP4)  
+2️⃣ **System auto-detects format** & **swaps stego tools dynamically**  
+3️⃣ **Runs steganography CLI tools** & **extracts hidden data**  
+4️⃣ **Generates graphs and reports** to visualize stego presence  
+5️⃣ **Output includes extracted messages, metadata, and possible payloads**  
+
+---
+
+## **🔧 Installation & Setup**
+💻 **Run it on Replit** (No local setup needed)  
+```bash
+git clone https://replit.com/@your-repo/deepanal
+cd deepanal
+chmod +x install.sh && ./install.sh
+```
+📦 **Manual Installation**
+```bash
+pip install -r requirements.txt
+```
+🛠 **Run the Analysis**
+```bash
+python main.py --input secret.png
+```
+
+---
+
+## **👀 Future Roadmap**
+✅ Support for **GIF & BMP Stego**  
+✅ **Automated Brute-Force Decoding** for XOR & LSB Variations  
+✅ **AI-Powered Pattern Detection** for Hidden Watermarks  
+✅ **Encrypted PGP Stego Extraction**  
+
+---
+
+## **🎯 Final Thoughts**
+DEEP ANAL is **not just another stego tool**—it’s a **full-fledged forensic solution** that dynamically **adapts to different image formats**, providing **cutting-edge analysis** with **real-time visualization.**  
+
+💀 **Catch hidden data before they catch you.**  
+
+🔥 **Stego harder. Analyze deeper.** 🔥  
+
