@@ -54,7 +54,7 @@ if uploaded_file:
 
             if st.button("Close", key="close_detailed", class_name="close-button"):
                 st.session_state.show_detailed_view = None
-                st.experimental_rerun()
+                st.rerun()
 
             # Show detailed content based on selected analysis
             analysis_type = st.session_state.show_detailed_view
