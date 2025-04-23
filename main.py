@@ -15,6 +15,8 @@ from utils.visualizations import (
 from utils.database import (
     save_analysis, get_recent_analyses, get_analysis_by_id
 )
+from utils.stego_detector import analyze_image_for_steganography
+from utils.stego_decoder import brute_force_decode
 
 st.set_page_config(
     page_title="DEEP ANAL: Steganography Analysis",
@@ -245,9 +247,11 @@ else:
                         <div class="fullscreen-content">
                 """, unsafe_allow_html=True)
 
-                if st.button("Close", key="close_detailed", class_name="close-button"):
-                    st.session_state.show_detailed_view = None
-                    st.rerun()
+                close_col1, close_col2, close_col3 = st.columns([1, 3, 1])
+                with close_col1:
+                    if st.button("Close", key="close_detailed"):
+                        st.session_state.show_detailed_view = None
+                        st.rerun()
 
                 # Show detailed content based on selected analysis
                 analysis_type = st.session_state.show_detailed_view
@@ -273,6 +277,57 @@ else:
                 st.markdown("</div></div>", unsafe_allow_html=True)
 
             else:
+                # Add a prominent stego detection banner at the top
+                # Run steganography detection 
+                is_image = uploaded_file.type.startswith('image/')
+                if is_image:
+                    detection_result = analyze_image_for_steganography(temp_path)
+                    likelihood_percentage = detection_result.get_formatted_likelihood()
+                    color_code = detection_result.get_color_code()
+                    
+                    # Display a prominent banner showing the likelihood
+                    banner_html = f"""
+                    <div style="margin-bottom: 25px; padding: 15px; border-radius: 10px; 
+                                background: linear-gradient(90deg, rgba(20,0,36,0.8) 0%, rgba(121,9,100,0.8) 100%);
+                                border: 2px solid {color_code}; box-shadow: 0 0 20px {color_code};">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h2 style="margin: 0; color: #ffffff; font-family: 'Courier New', monospace; text-shadow: 0 0 10px {color_code};">
+                                    STEGANOGRAPHY DETECTION RESULT
+                                </h2>
+                                <p style="margin: 5px 0 0 0; color: #cccccc; font-family: 'Courier New', monospace;">
+                                    Deep analysis complete. Hidden data assessment:
+                                </p>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px 20px; 
+                                        border-radius: 8px; border: 1px solid {color_code};">
+                                <h1 style="margin: 0; font-size: 2.5rem; color: {color_code}; font-family: 'Courier New', monospace;
+                                          text-shadow: 0 0 10px {color_code};">
+                                    {likelihood_percentage}
+                                </h1>
+                                <p style="margin: 0; color: #ffffff; font-size: 0.9rem; font-family: 'Courier New', monospace;">
+                                    chance of hidden data
+                                </p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <p style="margin: 0; color: #ffffff; font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                                {detection_result.main_finding}
+                            </p>
+                            
+                            <div style="margin-top: 10px;">
+                                <span style="color: #ff00ff; font-family: 'Courier New', monospace; font-weight: bold;">
+                                    Suspected techniques:
+                                </span>
+                                <span style="color: #00ffff; font-family: 'Courier New', monospace; margin-left: 10px;">
+                                    {', '.join(detection_result.techniques) if detection_result.techniques else 'None identified'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    """
+                    st.markdown(banner_html, unsafe_allow_html=True)
+                
                 # Create two columns for the layout
                 col1, col2 = st.columns(2)
 
@@ -319,6 +374,75 @@ else:
                     with st.expander("📁 File Structure", expanded=True):
                         structure = analyze_file_structure(temp_path)
                         st.code(structure)
+                    
+                    # Steganography Detection Details
+                    if is_image:
+                        with st.expander("🔍 Steganography Detection Details", expanded=True):
+                            # Create table with all the detection indicators
+                            st.markdown("### Detection Indicators")
+                            
+                            # Create a table header
+                            st.markdown("""
+                            <div style="display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; margin-bottom: 10px; 
+                                        background: rgba(0,0,0,0.2); padding: 8px; border-radius: 5px;">
+                                <div style="color: #00ffff; font-family: monospace; font-weight: bold;">Indicator</div>
+                                <div style="color: #00ffff; font-family: monospace; font-weight: bold;">Value</div>
+                                <div style="color: #00ffff; font-family: monospace; font-weight: bold;">Weight</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            # Display each indicator
+                            for name, details in detection_result.indicators.items():
+                                value = details["value"]
+                                weight = details["weight"]
+                                
+                                # Determine color based on value
+                                if value < 0.3:
+                                    value_color = "#00ff00"  # Green for low likelihood
+                                elif value < 0.7:
+                                    value_color = "#ffff00"  # Yellow for medium likelihood
+                                else:
+                                    value_color = "#ff0000"  # Red for high likelihood
+                                
+                                st.markdown(f"""
+                                <div style="display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; margin-bottom: 5px; 
+                                            background: rgba(0,0,0,0.1); padding: 8px; border-radius: 3px;">
+                                    <div style="color: #ffffff; font-family: monospace;">{name}</div>
+                                    <div style="color: {value_color}; font-family: monospace; font-weight: bold;">{value*100:.1f}%</div>
+                                    <div style="color: #00ffff; font-family: monospace;">{weight}</div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Display full explanation
+                            st.markdown("### Detailed Explanation")
+                            
+                            explanation_html = f"""
+                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; 
+                                        border-left: 3px solid {color_code}; margin-top: 10px;">
+                                <p style="color: #ffffff; font-family: monospace;">
+                                    {detection_result.main_finding}
+                                </p>
+                                
+                                <div style="margin-top: 15px;">
+                                    <p style="color: #00ffff; font-family: monospace; font-weight: bold;">Specific findings:</p>
+                                    <ul style="list-style-type: none; padding-left: 5px;">
+                            """
+                            
+                            # Add the detailed findings
+                            for finding in detection_result.detailed_findings:
+                                explanation_html += f"""
+                                        <li style="color: #ffffff; font-family: monospace; margin-bottom: 5px;">
+                                            • {finding}
+                                        </li>
+                                """
+                                
+                            explanation_html += """
+                                    </ul>
+                                </div>
+                            </div>
+                            """
+                            
+                            st.markdown(explanation_html, unsafe_allow_html=True)
 
                 with col2:
                     st.subheader("Visualizations")
@@ -351,6 +475,94 @@ else:
                     with st.expander("📝 Hex Dump", expanded=True):
                         hex_dump = get_hex_dump(temp_path)
                         st.markdown(format_hex_dump(hex_dump), unsafe_allow_html=True)
+                    
+                    # Brute Force Decoder for images
+                    if is_image and detection_result.likelihood > 0.3:
+                        with st.expander("⚡ Steganography Decoder", expanded=True):
+                            st.markdown("""
+                            <h3 style="color: #00ffff; font-family: monospace; margin-bottom: 10px;">
+                                Automated Brute-Force Decoder
+                            </h3>
+                            <p style="color: #ffffff; font-family: monospace; margin-bottom: 15px;">
+                                Attempt to extract hidden data using multiple steganography methods.
+                            </p>
+                            """, unsafe_allow_html=True)
+                            
+                            # Password list for brute force
+                            st.markdown('<div style="margin-bottom: 10px;">', unsafe_allow_html=True)
+                            password_input = st.text_input(
+                                "Optional password list (comma-separated)",
+                                placeholder="password,123456,admin,stego,secret",
+                                key="password_list"
+                            )
+                            
+                            # Convert input to list if provided
+                            password_list = None
+                            if password_input:
+                                password_list = [p.strip() for p in password_input.split(",") if p.strip()]
+                            
+                            # Run the decoder
+                            if st.button("Run Brute-Force Decoder", key="run_decoder"):
+                                with st.spinner("Running brute-force decoding... This may take some time."):
+                                    results = brute_force_decode(temp_path, password_list)
+                                    
+                                    # Display results
+                                    for i, result in enumerate(results):
+                                        if result.success:
+                                            # Display successful result with higher prominence
+                                            st.markdown(f"""
+                                            <div style="margin-bottom: 15px; padding: 12px; border-radius: 5px; 
+                                                        background: linear-gradient(90deg, rgba(0,36,23,0.8) 0%, rgba(9,121,75,0.8) 100%);
+                                                        border: 2px solid #00ff00;">
+                                                <h4 style="margin: 0; color: #00ff00; font-family: monospace;">
+                                                    ✅ SUCCESS: {result.method}
+                                                </h4>
+                                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                                    <span style="color: #ffffff; font-family: monospace;">
+                                                        Confidence: {result.confidence*100:.1f}%
+                                                    </span>
+                                                    <span style="color: #00ffff; font-family: monospace;">
+                                                        Data size: {len(result.data) if result.data else 0} bytes
+                                                    </span>
+                                                </div>
+                                                
+                                                <div style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px;">
+                                                    <p style="color: #00ff00; font-family: monospace; margin-bottom: 5px; font-weight: bold;">
+                                                        Data Preview:
+                                                    </p>
+                                                    <code style="color: #ffffff; font-family: monospace; white-space: pre-wrap; display: block; 
+                                                              word-break: break-all; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 3px;">
+                                                        {str(result.data[:1000]).replace('<', '&lt;').replace('>', '&gt;') if result.data else 'No data'}
+                                                    </code>
+                                                </div>
+                                                
+                                                <div style="margin-top: 8px;">
+                                                    <span style="color: #00ffff; font-family: monospace; font-weight: bold;">
+                                                        Additional Info:
+                                                    </span>
+                                                    <span style="color: #ffffff; font-family: monospace; margin-left: 5px;">
+                                                        {', '.join(f"{k}={v}" for k, v in result.info.items())}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                                        else:
+                                            # Just list the unsuccessful methods more compactly
+                                            st.markdown(f"""
+                                            <div style="margin-bottom: 8px; padding: 8px; border-radius: 4px; 
+                                                        background: rgba(0,0,0,0.2); border-left: 3px solid #ff0000;">
+                                                <div style="display: flex; justify-content: space-between;">
+                                                    <span style="color: #ff0000; font-family: monospace;">
+                                                        ❌ Failed: {result.method}
+                                                    </span>
+                                                    <span style="color: #ffffff; font-family: monospace;">
+                                                        {', '.join(f"{k}={v}" for k, v in result.info.items() if k == 'error')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                            
+                            st.markdown('</div>', unsafe_allow_html=True)
 
         finally:
             # Cleanup temporary file
