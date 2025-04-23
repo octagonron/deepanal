@@ -451,7 +451,7 @@ else:
                     entropy = calculate_entropy(temp_path)
                     st.markdown('<div class="visualization-container">', unsafe_allow_html=True)
                     st.plotly_chart(
-                        create_entropy_plot(entropy),
+                        create_entropy_plot(entropy, lower_staging=True),
                         use_container_width=True
                     )
                     if st.button("View Detailed Entropy Analysis", key="entropy_detail"):
@@ -463,7 +463,7 @@ else:
                     bytes_values, frequencies = get_byte_frequency(temp_path)
                     st.markdown('<div class="visualization-container">', unsafe_allow_html=True)
                     st.plotly_chart(
-                        create_byte_frequency_plot(bytes_values, frequencies),
+                        create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True),
                         use_container_width=True
                     )
                     if st.button("View Detailed Frequency Analysis", key="frequency_detail"):

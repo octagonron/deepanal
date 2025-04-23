@@ -52,8 +52,8 @@ def create_cyberpunk_theme():
         'margin': {'l': 0, 'r': 0, 't': 30, 'b': 0}
     }
 
-def create_entropy_plot(entropy_value):
-    """Create a cyberpunk 3D entropy visualization."""
+def create_entropy_plot(entropy_value, lower_staging=True):
+    """Create a cyberpunk 3D entropy visualization with adjustable positioning."""
     # Generate more complex patterns for visualization
     t = np.linspace(0, 16*np.pi, 2000)
     scale = entropy_value / 8  # Normalize to max entropy of 8
@@ -294,19 +294,32 @@ def create_entropy_plot(entropy_value):
         **create_cyberpunk_theme()
     )
     
-    # Make animation more smooth
-    fig.update_layout(
-        scene_camera=dict(
-            up=dict(x=0, y=0, z=1),
-            center=dict(x=0, y=0, z=0),
-            eye=dict(x=1.8, y=1.8, z=0.8)
+    # Position the graph lower to prevent obstruction
+    if lower_staging:
+        # Position the graph lower in the visualization container
+        fig.update_layout(
+            scene_camera=dict(
+                up=dict(x=0, y=0, z=1),
+                center=dict(x=0, y=0, z=-0.3),  # Move center down
+                eye=dict(x=1.8, y=1.8, z=1.2)   # Look from higher angle
+            ),
+            # Add more margin at the top to prevent obstruction
+            margin=dict(t=80, b=20, l=20, r=20)
         )
-    )
+    else:
+        # Standard camera settings if not using lower staging
+        fig.update_layout(
+            scene_camera=dict(
+                up=dict(x=0, y=0, z=1),
+                center=dict(x=0, y=0, z=0),
+                eye=dict(x=1.8, y=1.8, z=0.8)
+            )
+        )
     
     return fig
 
-def create_byte_frequency_plot(bytes_values, frequencies):
-    """Create a cyberpunk 3D byte frequency visualization matching the reference image."""
+def create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True):
+    """Create a cyberpunk 3D byte frequency visualization with adjustable positioning."""
     # Normalize frequencies
     freq_norm = np.array(frequencies) / max(frequencies)
     x = np.array(bytes_values)
@@ -630,8 +643,10 @@ def create_byte_frequency_plot(bytes_values, frequencies):
                 showbackground=True,
                 backgroundcolor='rgba(0,0,20,0.8)',
             ),
+            # Position the camera based on lower_staging parameter
             camera=dict(
-                eye=dict(x=1.8, y=1.2, z=1.5),
+                eye=dict(x=1.8, y=1.2, z=1.5 if not lower_staging else 1.8),
+                center=dict(x=0, y=0, z=-0.2 if lower_staging else 0),
                 up=dict(x=0, y=0, z=1)
             ),
         ),
