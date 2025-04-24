@@ -675,17 +675,23 @@ def format_hex_dump(hex_dump):
     lines = hex_dump.split('\n')
     formatted = []
     
-    # Add cyberpunk header
-    formatted.append(f"""
+    # Add cyberpunk header - use explicit HTML escaping for the template
+    header = """
     <div style="border: 1px solid #00ffff; border-radius: 5px; padding: 10px; margin-bottom: 15px; 
                 background-color: rgba(0,0,20,0.8); color: #ff00ff;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <span style="color: #00ffff; font-family: monospace; font-weight: bold;">DEEP ANAL</span>
             <span style="color: #ffff00; font-family: monospace;">HEX MATRIX</span>
-            <span style="color: #ff00ff; font-family: monospace;">{datetime.datetime.now().strftime("%H:%M:%S")}</span>
+            <span style="color: #ff00ff; font-family: monospace;">{time}</span>
         </div>
         <div style="height: 2px; background: linear-gradient(90deg, #00ffff, #ff00ff, #ffff00); margin-bottom: 10px;"></div>
-    """)
+    """
+    
+    # Format the time separately to avoid HTML issues
+    current_time = datetime.datetime.now().strftime("%H:%M:%S")
+    header = header.format(time=current_time)
+    
+    formatted.append(header)
     
     # Add each line with advanced styling
     for i, line in enumerate(lines):

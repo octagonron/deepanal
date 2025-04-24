@@ -48,6 +48,13 @@ def save_analysis(filename, file_size, file_type, entropy_value, metadata, thumb
     """Save analysis results to database."""
     try:
         session = get_db_session()
+        
+        # Convert NumPy types to Python native types to avoid database errors
+        if hasattr(entropy_value, 'item'):  # Check if it's a NumPy type
+            entropy_value = float(entropy_value.item())  # Convert to Python float
+        else:
+            entropy_value = float(entropy_value)  # Ensure it's a float
+            
         analysis = AnalysisResult(
             filename=filename,
             file_size=file_size,
