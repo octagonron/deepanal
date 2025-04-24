@@ -292,34 +292,34 @@ else:
                                 border: 2px solid {color_code}; box-shadow: 0 0 20px {color_code};">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <div>
-                                <h2 style="margin: 0; color: #ffffff; font-family: 'Courier New', monospace; text-shadow: 0 0 10px {color_code};">
+                                <h2 style="margin: 0; color: #ffffff; font-family: monospace; text-shadow: 0 0 10px {color_code};">
                                     STEGANOGRAPHY DETECTION RESULT
                                 </h2>
-                                <p style="margin: 5px 0 0 0; color: #cccccc; font-family: 'Courier New', monospace;">
+                                <p style="margin: 5px 0 0 0; color: #cccccc; font-family: monospace;">
                                     Deep analysis complete. Hidden data assessment:
                                 </p>
                             </div>
                             <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px 20px; 
                                         border-radius: 8px; border: 1px solid {color_code};">
-                                <h1 style="margin: 0; font-size: 2.5rem; color: {color_code}; font-family: 'Courier New', monospace;
+                                <h1 style="margin: 0; font-size: 2.5rem; color: {color_code}; font-family: monospace;
                                           text-shadow: 0 0 10px {color_code};">
                                     {likelihood_percentage}
                                 </h1>
-                                <p style="margin: 0; color: #ffffff; font-size: 0.9rem; font-family: 'Courier New', monospace;">
+                                <p style="margin: 0; color: #ffffff; font-size: 0.9rem; font-family: monospace;">
                                     chance of hidden data
                                 </p>
                             </div>
                         </div>
                         <div style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <p style="margin: 0; color: #ffffff; font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                            <p style="margin: 0; color: #ffffff; font-family: monospace; font-size: 0.9rem;">
                                 {detection_result.main_finding}
                             </p>
                             
                             <div style="margin-top: 10px;">
-                                <span style="color: #ff00ff; font-family: 'Courier New', monospace; font-weight: bold;">
+                                <span style="color: #ff00ff; font-family: monospace; font-weight: bold;">
                                     Suspected techniques:
                                 </span>
-                                <span style="color: #00ffff; font-family: 'Courier New', monospace; margin-left: 10px;">
+                                <span style="color: #00ffff; font-family: monospace; margin-left: 10px;">
                                     {', '.join(detection_result.techniques) if detection_result.techniques else 'None identified'}
                                 </span>
                             </div>

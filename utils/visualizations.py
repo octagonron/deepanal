@@ -765,15 +765,18 @@ def format_hex_dump(hex_dump):
                 formatted.append(styled_line)
     
     # Add cyberpunk footer
-    formatted.append(f"""
+    footer = """
         <div style="height: 2px; background: linear-gradient(90deg, #ffff00, #ff00ff, #00ffff); margin-top: 10px;"></div>
         <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8em;">
-            <span style="color: #00ffff; font-family: monospace;">SECTOR: {len(lines)}</span>
+            <span style="color: #00ffff; font-family: monospace;">SECTOR: {lines_count}</span>
             <span style="color: #ffff00; font-family: monospace;">TYPE: BINARY</span>
             <span style="color: #ff00ff; font-family: monospace;">DEEP ANAL v1.0</span>
         </div>
     </div>
-    """)
+    """
+    
+    # Format the footer with the line count
+    formatted.append(footer.format(lines_count=len(lines)))
     
     return "\n".join(formatted)
 
