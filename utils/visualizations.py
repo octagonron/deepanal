@@ -234,23 +234,29 @@ def create_entropy_plot(entropy_value, lower_staging=True):
             name=f'Data Ring {i+1}'
         ))
     
-    # 8. Add entropy value indicator
+    # 8. Add entropy value indicator (just the marker)
     fig.add_trace(go.Scatter3d(
         x=[0], y=[0], z=[scale*1.8],
-        mode='markers+text',
+        mode='markers',
         marker=dict(
             size=16,
             color='#ff00ff',
             symbol='diamond',
             line=dict(color='#00ffff', width=2)
         ),
-        text=[f'Entropy: {entropy_value:.2f}'],
-        textposition='top center',
+        name='Entropy Value'
+    ))
+    
+    # Add entropy text separate from the marker, positioned to the side
+    fig.add_trace(go.Scatter3d(
+        x=[scale*1.2], y=[scale*0.5], z=[scale*1.8],
+        mode='text',
+        text=[f'Entropy: {entropy_value:.4f}'],
         textfont=dict(
             color='#ffff00',
             size=14
         ),
-        name='Entropy Value'
+        name='Entropy Value Text'
     ))
     
     # Add small holographic info panels
@@ -292,6 +298,28 @@ def create_entropy_plot(entropy_value, lower_staging=True):
             borderwidth=1
         ),
         **create_cyberpunk_theme()
+    )
+    
+    # Add 2D annotation with entropy value for better visibility
+    fig.add_annotation(
+        x=0.98,  # Right side
+        y=0.85,  # Upper part
+        text=f"<b>ENTROPY VALUE:</b> {entropy_value:.6f}<br>"
+             f"<b>NORMALIZED:</b> {entropy_value/8:.4f}<br>"
+             f"<b>STATUS:</b> {'HIGH' if entropy_value > 7 else 'NORMAL' if entropy_value > 5 else 'LOW'}",
+        showarrow=False,
+        font=dict(
+            family="monospace",
+            size=14,
+            color="#00ffff"
+        ),
+        align="right",
+        bgcolor="rgba(0,0,30,0.7)",
+        bordercolor="#ff00ff",
+        borderwidth=2,
+        borderpad=6,
+        xref="paper",
+        yref="paper"
     )
     
     # Position the graph lower to prevent obstruction
@@ -561,13 +589,13 @@ def create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True):
         f"ENTROPY INDEX: {freq_std/freq_avg:.2f}"
     ]
     
-    # Place text panels in 3D space
+    # Place text panels in 3D space at a better position
     for i, text in enumerate(panel_texts):
         fig.add_trace(
             go.Scatter3d(
-                x=[255 * 1.1],  # Right side
-                y=[0.5],        # Center Y
-                z=[1.5 - i*0.2],  # Stacked vertically
+                x=[255 * 1.3],  # Further right side
+                y=[0.2 + i*0.2],  # Staggered Y positions
+                z=[0.8],         # Fixed height for better visibility
                 mode='text',
                 text=[text],
                 textfont=dict(
@@ -666,6 +694,28 @@ def create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True):
         margin=dict(l=0, r=0, t=50, b=0),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
+    )
+    
+    # Add 2D annotation with key statistics for better visibility
+    fig.add_annotation(
+        x=0.98,  # Right side
+        y=0.85,  # Upper part
+        text=f"<b>MAX BYTE:</b> {int(max_byte)} ({max_byte:02X}h)<br>"
+             f"<b>PEAK FREQ:</b> {freq_max:.4f}<br>"
+             f"<b>ANOMALY INDEX:</b> {freq_std/freq_avg:.2f}",
+        showarrow=False,
+        font=dict(
+            family="monospace",
+            size=14,
+            color="#00ffff"
+        ),
+        align="right",
+        bgcolor="rgba(0,0,30,0.7)",
+        bordercolor="#ff00ff",
+        borderwidth=2,
+        borderpad=6,
+        xref="paper",
+        yref="paper"
     )
     
     return fig
