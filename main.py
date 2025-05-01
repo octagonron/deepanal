@@ -13,7 +13,7 @@ from utils.visualizations import (
     create_detailed_view
 )
 from utils.database import (
-    save_analysis, get_recent_analyses, get_analysis_by_id
+    save_analysis, get_recent_analyses, get_analysis_by_id, DB_AVAILABLE
 )
 from utils.stego_detector import analyze_image_for_steganography
 from utils.stego_decoder import brute_force_decode

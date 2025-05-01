@@ -6,11 +6,10 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, LargeBinar
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-# Get the database URL from environment variables
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Flag to track database availability
+DB_AVAILABLE = True
 
-# Create engine and base
-engine = create_engine(DATABASE_URL)
+# Base class for models
 Base = declarative_base()
 
 class AnalysisResult(Base):
@@ -29,26 +28,55 @@ class AnalysisResult(Base):
     def __repr__(self):
         return f"<AnalysisResult(id={self.id}, filename='{self.filename}')>"
 
-# Create tables
-Base.metadata.create_all(engine)
+# Initialize engine and session factory
+engine = None
+SessionLocal = None
 
-# Session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Try to initialize database connection
+try:
+    # Get the database URL from environment variables
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    
+    if DATABASE_URL:
+        # Create engine and base
+        engine = create_engine(DATABASE_URL)
+        
+        # Try to create tables
+        Base.metadata.create_all(engine)
+        
+        # Session factory
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    else:
+        print("WARNING: DATABASE_URL environment variable not set")
+        DB_AVAILABLE = False
+except Exception as e:
+    print(f"ERROR: Failed to initialize database: {str(e)}")
+    DB_AVAILABLE = False
 
 def get_db_session():
     """Get a database session."""
-    session = SessionLocal()
+    if not DB_AVAILABLE or not SessionLocal:
+        return None
+        
     try:
+        session = SessionLocal()
         return session
-    except:
-        session.close()
-        raise
+    except Exception as e:
+        print(f"Failed to create database session: {str(e)}")
+        return None
 
 def save_analysis(filename, file_size, file_type, entropy_value, metadata, thumbnail=None):
     """Save analysis results to database."""
+    if not DB_AVAILABLE:
+        print("Database not available, skipping analysis save")
+        return None
+        
+    session = None
     try:
         session = get_db_session()
-        
+        if not session:
+            return None
+            
         # Convert NumPy types to Python native types to avoid database errors
         if hasattr(entropy_value, 'item'):  # Check if it's a NumPy type
             entropy_value = float(entropy_value.item())  # Convert to Python float
@@ -67,31 +95,54 @@ def save_analysis(filename, file_size, file_type, entropy_value, metadata, thumb
         session.commit()
         return analysis.id
     except Exception as e:
+        print(f"Error saving analysis to database: {str(e)}")
         if session:
             session.rollback()
-        raise e
+        return None
     finally:
         if session:
             session.close()
 
 def get_recent_analyses(limit=10):
     """Get recent analysis records."""
+    if not DB_AVAILABLE:
+        print("Database not available, returning empty results")
+        return []
+        
     session = get_db_session()
+    if not session:
+        return []
+        
     try:
         results = session.query(AnalysisResult).order_by(
             AnalysisResult.analysis_date.desc()
         ).limit(limit).all()
         return results
+    except Exception as e:
+        print(f"Error getting recent analyses: {str(e)}")
+        return []
     finally:
-        session.close()
+        if session:
+            session.close()
 
 def get_analysis_by_id(analysis_id):
     """Get analysis by ID."""
+    if not DB_AVAILABLE:
+        print("Database not available, returning None")
+        return None
+        
     session = get_db_session()
+    if not session:
+        return None
+        
     try:
         result = session.query(AnalysisResult).filter(
             AnalysisResult.id == analysis_id
         ).first()
         return result
+    except Exception as e:
+        print(f"Error getting analysis by ID: {str(e)}")
+        return None
     finally:
-        session.close()
+        if session:
+            session.close()
