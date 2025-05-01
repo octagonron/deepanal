@@ -58,54 +58,80 @@ with st.sidebar:
     if selected_view == "💾 Analysis History":
         st.session_state.view_history = True
         
-        # Get recent analyses from database
-        analyses = get_recent_analyses(limit=20)
-        
-        if analyses:
+        # Check if database is available
+        if not DB_AVAILABLE:
+            st.error("⚠️ Database is currently offline. Analysis history is not available.")
             st.markdown("""
-            <div style="border: 1px solid #00ffff; padding: 10px; border-radius: 5px; 
-                        background-color: rgba(0,0,20,0.8); margin-bottom: 15px;">
-                <h4 style="color: #ff00ff; font-family: monospace;">Recent Analyses</h4>
+            <div style="border: 1px solid #ff3366; padding: 10px; border-radius: 5px; 
+                        background-color: rgba(30,0,10,0.8); margin: 15px 0;">
+                <h4 style="color: #ff3366; font-family: monospace;">Database Connection Error</h4>
+                <p style="color: #ffffff; font-family: monospace; font-size: 0.9em;">
+                    The PostgreSQL database endpoint is currently disabled.
+                </p>
+                <p style="color: #00ffff; font-family: monospace; font-size: 0.8em;">
+                    You can still use all analysis features, but results won't be saved.
+                </p>
             </div>
             """, unsafe_allow_html=True)
             
-            for analysis in analyses:
-                # Format date for display
-                date_str = analysis.analysis_date.strftime("%Y-%m-%d %H:%M")
-                
-                # Create a card for each analysis
-                card = f"""
-                <div style="margin-bottom: 10px; padding: 8px; border-radius: 5px; background: rgba(0,10,30,0.4);
-                            border-left: 3px solid #00ffff; cursor: pointer;"
-                     onclick="this.style.borderColor='#ff00ff';">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #00ffff; font-family: monospace; font-size: 0.9em; white-space: nowrap; 
-                                    overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-                            {analysis.filename}
-                        </span>
-                        <span style="color: #ffff00; font-family: monospace; font-size: 0.8em;">
-                            {date_str}
-                        </span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                        <span style="color: #ff00ff; font-family: monospace; font-size: 0.8em;">
-                            Type: {analysis.file_type or 'Unknown'}
-                        </span>
-                        <span style="color: #00ffff; font-family: monospace; font-size: 0.8em;">
-                            Entropy: {analysis.entropy_value:.2f}
-                        </span>
-                    </div>
+            # Add a button to return to main view
+            if st.button("Return to Analysis", key="return_from_db_error"):
+                st.session_state.view_history = False
+                st.rerun()
+        else:
+            # Get recent analyses from database
+            analyses = get_recent_analyses(limit=20)
+            
+            if analyses:
+                st.markdown("""
+                <div style="border: 1px solid #00ffff; padding: 10px; border-radius: 5px; 
+                            background-color: rgba(0,0,20,0.8); margin-bottom: 15px;">
+                    <h4 style="color: #ff00ff; font-family: monospace;">Recent Analyses</h4>
                 </div>
-                """
+                """, unsafe_allow_html=True)
                 
-                # Use a button with the card UI inside it
-                if st.markdown(card, unsafe_allow_html=True):
-                    st.session_state.selected_history_id = analysis.id
-                
-                # Add a small button for loading this analysis
-                if st.button(f"Load #{analysis.id}", key=f"load_{analysis.id}"):
-                    st.session_state.selected_history_id = analysis.id
-                    st.info(f"Loading analysis #{analysis.id}")
+                for analysis in analyses:
+                    # Format date for display
+                    date_str = analysis.analysis_date.strftime("%Y-%m-%d %H:%M")
+                    
+                    # Create a card for each analysis
+                    card = f"""
+                    <div style="margin-bottom: 10px; padding: 8px; border-radius: 5px; background: rgba(0,10,30,0.4);
+                                border-left: 3px solid #00ffff; cursor: pointer;"
+                         onclick="this.style.borderColor='#ff00ff';">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #00ffff; font-family: monospace; font-size: 0.9em; white-space: nowrap; 
+                                        overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                                {analysis.filename}
+                            </span>
+                            <span style="color: #ffff00; font-family: monospace; font-size: 0.8em;">
+                                {date_str}
+                            </span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                            <span style="color: #ff00ff; font-family: monospace; font-size: 0.8em;">
+                                Type: {analysis.file_type or 'Unknown'}
+                            </span>
+                            <span style="color: #00ffff; font-family: monospace; font-size: 0.8em;">
+                                Entropy: {analysis.entropy_value:.2f}
+                            </span>
+                        </div>
+                    </div>
+                    """
+                    
+                    # Use a button with the card UI inside it
+                    if st.markdown(card, unsafe_allow_html=True):
+                        st.session_state.selected_history_id = analysis.id
+                    
+                    # Add a small button for loading this analysis
+                    if st.button(f"Load #{analysis.id}", key=f"load_{analysis.id}"):
+                        st.session_state.selected_history_id = analysis.id
+                        st.info(f"Loading analysis #{analysis.id}")
+            else:
+                st.info("No previous analyses found in the database.")
+                if st.button("Return to Analysis", key="return_no_analyses"):
+                    st.session_state.view_history = False
+                    st.rerun()
     else:
         st.session_state.view_history = False
         
@@ -131,8 +157,8 @@ with st.sidebar:
                 <span style="color: #ffff00; font-family: monospace; font-size: 0.8em;">
                     Database
                 </span>
-                <span style="color: #00ffff; font-family: monospace; font-size: 0.8em;">
-                    ONLINE
+                <span style="color: #{'00ffff' if DB_AVAILABLE else 'ff3366'}; font-family: monospace; font-size: 0.8em;">
+                    {'ONLINE' if DB_AVAILABLE else 'OFFLINE'}
                 </span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 5px;">
@@ -340,30 +366,36 @@ else:
                         for key, value in metadata.items():
                             st.markdown(f"**{key}:** {value}")
                         
-                        # Save analysis to database
-                        try:
-                            # Get file size
-                            file_size = os.path.getsize(temp_path)
-                            
-                            # Get file type
-                            file_type = metadata.get('File Type', 'Unknown')
-                            
-                            # Convert metadata to JSON string
-                            metadata_json = json.dumps(metadata)
-                            
-                            # Save to database
-                            analysis_id = save_analysis(
-                                filename=uploaded_file.name,
-                                file_size=file_size,
-                                file_type=file_type,
-                                entropy_value=calculate_entropy(temp_path),
-                                metadata=metadata_json
-                            )
-                            
-                            # Display success message
-                            st.success(f"Analysis saved to database with ID: {analysis_id}")
-                        except Exception as e:
-                            st.error(f"Failed to save analysis to database: {str(e)}")
+                        # Save analysis to database (if available)
+                        if DB_AVAILABLE:
+                            try:
+                                # Get file size
+                                file_size = os.path.getsize(temp_path)
+                                
+                                # Get file type
+                                file_type = metadata.get('File Type', 'Unknown')
+                                
+                                # Convert metadata to JSON string
+                                metadata_json = json.dumps(metadata)
+                                
+                                # Save to database
+                                analysis_id = save_analysis(
+                                    filename=uploaded_file.name,
+                                    file_size=file_size,
+                                    file_type=file_type,
+                                    entropy_value=calculate_entropy(temp_path),
+                                    metadata=metadata_json
+                                )
+                                
+                                # Display success message if successful
+                                if analysis_id:
+                                    st.success(f"Analysis saved to database with ID: {analysis_id}")
+                                else:
+                                    st.warning("Analysis processed but not saved to database due to connection issues.")
+                            except Exception as e:
+                                st.error(f"Failed to save analysis to database: {str(e)}")
+                        else:
+                            st.warning("Database is offline. Analysis results won't be saved for future reference.")
 
                     # String Analysis
                     with st.expander("🔤 String Analysis", expanded=True):
