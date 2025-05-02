@@ -16,7 +16,8 @@ from utils.database import (
     save_analysis, get_recent_analyses, get_analysis_by_id, DB_AVAILABLE
 )
 from utils.stego_detector import analyze_image_for_steganography
-from utils.stego_decoder import brute_force_decode
+# Mobile app version will use a native implementation
+# from utils.stego_decoder import brute_force_decode
 
 st.set_page_config(
     page_title="DEEP ANAL: Steganography Analysis",
@@ -508,93 +509,34 @@ else:
                         hex_dump = get_hex_dump(temp_path)
                         st.markdown(format_hex_dump(hex_dump), unsafe_allow_html=True)
                     
-                    # Brute Force Decoder for images
-                    if is_image and detection_result.likelihood > 0.3:
-                        with st.expander("⚡ Steganography Decoder", expanded=True):
+                    # Mobile App Version Info
+                    if is_image:
+                        with st.expander("📱 Mobile App Version", expanded=False):
                             st.markdown("""
                             <h3 style="color: #00ffff; font-family: monospace; margin-bottom: 10px;">
-                                Automated Brute-Force Decoder
+                                DEEP ANAL Mobile
                             </h3>
                             <p style="color: #ffffff; font-family: monospace; margin-bottom: 15px;">
-                                Attempt to extract hidden data using multiple steganography methods.
+                                A mobile version of this tool is available for iOS and Android.
                             </p>
+                            <div style="display: flex; justify-content: space-between; margin: 20px 0;">
+                                <div style="text-align: center; padding: 10px; background: rgba(0,0,30,0.5); 
+                                            border-radius: 10px; width: 48%; border: 1px solid #00ffff;">
+                                    <h4 style="color: #00ffff; font-family: monospace;">iOS Version</h4>
+                                    <p style="color: #ffffff; font-family: monospace;">
+                                        Available on the App Store
+                                    </p>
+                                </div>
+                                <div style="text-align: center; padding: 10px; background: rgba(0,0,30,0.5); 
+                                            border-radius: 10px; width: 48%; border: 1px solid #00ffff;">
+                                    <h4 style="color: #00ffff; font-family: monospace;">Android Version</h4>
+                                    <p style="color: #ffffff; font-family: monospace;">
+                                        Available on Google Play
+                                    </p>
+                                </div>
+                            </div>
                             """, unsafe_allow_html=True)
-                            
-                            # Password list for brute force
-                            st.markdown('<div style="margin-bottom: 10px;">', unsafe_allow_html=True)
-                            password_input = st.text_input(
-                                "Optional password list (comma-separated)",
-                                placeholder="password,123456,admin,stego,secret",
-                                key="password_list"
-                            )
-                            
-                            # Convert input to list if provided
-                            password_list = None
-                            if password_input:
-                                password_list = [p.strip() for p in password_input.split(",") if p.strip()]
-                            
-                            # Run the decoder
-                            if st.button("Run Brute-Force Decoder", key="run_decoder"):
-                                with st.spinner("Running brute-force decoding... This may take some time."):
-                                    results = brute_force_decode(temp_path, password_list)
-                                    
-                                    # Display results
-                                    for i, result in enumerate(results):
-                                        if result.success:
-                                            # Display successful result with higher prominence
-                                            st.markdown(f"""
-                                            <div style="margin-bottom: 15px; padding: 12px; border-radius: 5px; 
-                                                        background: linear-gradient(90deg, rgba(0,36,23,0.8) 0%, rgba(9,121,75,0.8) 100%);
-                                                        border: 2px solid #00ff00;">
-                                                <h4 style="margin: 0; color: #00ff00; font-family: monospace;">
-                                                    ✅ SUCCESS: {result.method}
-                                                </h4>
-                                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                                                    <span style="color: #ffffff; font-family: monospace;">
-                                                        Confidence: {result.confidence*100:.1f}%
-                                                    </span>
-                                                    <span style="color: #00ffff; font-family: monospace;">
-                                                        Data size: {len(result.data) if result.data else 0} bytes
-                                                    </span>
-                                                </div>
-                                                
-                                                <div style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px;">
-                                                    <p style="color: #00ff00; font-family: monospace; margin-bottom: 5px; font-weight: bold;">
-                                                        Data Preview:
-                                                    </p>
-                                                    <code style="color: #ffffff; font-family: monospace; white-space: pre-wrap; display: block; 
-                                                              word-break: break-all; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 3px;">
-                                                        {str(result.data[:1000]).replace('<', '&lt;').replace('>', '&gt;') if result.data else 'No data'}
-                                                    </code>
-                                                </div>
-                                                
-                                                <div style="margin-top: 8px;">
-                                                    <span style="color: #00ffff; font-family: monospace; font-weight: bold;">
-                                                        Additional Info:
-                                                    </span>
-                                                    <span style="color: #ffffff; font-family: monospace; margin-left: 5px;">
-                                                        {', '.join(f"{k}={v}" for k, v in result.info.items())}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            """, unsafe_allow_html=True)
-                                        else:
-                                            # Just list the unsuccessful methods more compactly
-                                            st.markdown(f"""
-                                            <div style="margin-bottom: 8px; padding: 8px; border-radius: 4px; 
-                                                        background: rgba(0,0,0,0.2); border-left: 3px solid #ff0000;">
-                                                <div style="display: flex; justify-content: space-between;">
-                                                    <span style="color: #ff0000; font-family: monospace;">
-                                                        ❌ Failed: {result.method}
-                                                    </span>
-                                                    <span style="color: #ffffff; font-family: monospace;">
-                                                        {', '.join(f"{k}={v}" for k, v in result.info.items() if k == 'error')}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            """, unsafe_allow_html=True)
-                            
-                            st.markdown('</div>', unsafe_allow_html=True)
+
 
         finally:
             # Cleanup temporary file
