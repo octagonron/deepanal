@@ -131,13 +131,29 @@ if uploaded_file:
         
         # Only PNG and JPEG images are supported for advanced analysis
         if is_image:
-            # Run stego detection
-            detection_result = analyze_image_for_steganography(temp_path)
-            likelihood = detection_result.likelihood
-            likelihood_percentage = f"{likelihood*100:.1f}%"
-            
-            # Determine color based on likelihood
-            color = "#00ff00" if likelihood < 0.4 else "#ffff00" if likelihood < 0.7 else "#ff0000"
+            # Run stego detection with enhanced sensitivity algorithms
+            try:
+                detection_result = analyze_image_for_steganography(temp_path)
+                likelihood = detection_result.likelihood
+                likelihood_percentage = f"{likelihood*100:.1f}%"
+                
+                # Determine color based on likelihood
+                color = "#00ff00" if likelihood < 0.3 else "#ffff00" if likelihood < 0.6 else "#ff0000"
+                
+                # Add debugging for hidden message detection
+                st.session_state['last_analysis'] = {
+                    'filename': uploaded_file.name,
+                    'likelihood': likelihood,
+                    'indicators': detection_result.indicators,
+                    'techniques': detection_result.techniques if hasattr(detection_result, 'techniques') else []
+                }
+            except Exception as e:
+                st.error(f"Error in steganography detection: {str(e)}")
+                # Fallback values
+                likelihood = 0
+                likelihood_percentage = "0.0%"
+                color = "#00ff00"
+                detection_result = None
             
             # Save analysis to database if available
             if DB_AVAILABLE:
@@ -179,11 +195,11 @@ if uploaded_file:
                     Steganography Detection: {likelihood_percentage}
                 </h2>
                 <p style="color: #ffffff; font-family: monospace; font-size: 1.1em;">
-                    {detection_result.main_finding}
+                    {detection_result.main_finding if detection_result else "Analysis error - no results available"}
                 </p>
                 <div style="margin-top: 10px; font-size: 0.9em; color: #00ffff; font-family: monospace;">
                     <span style="color: #ffff00;">Potential Techniques:</span> 
-                    {", ".join(detection_result.techniques) if hasattr(detection_result, "techniques") and detection_result.techniques else "None identified"}
+                    {", ".join(detection_result.techniques) if detection_result and hasattr(detection_result, "techniques") and detection_result.techniques else "None identified"}
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -239,37 +255,55 @@ if uploaded_file:
                 """, unsafe_allow_html=True)
                 
                 # Display each indicator
-                for name, details in detection_result.indicators.items():
-                    value = details["value"]
-                    weight = details["weight"]
-                    
-                    # Determine color based on value
-                    value_color = "#00ff00" if value < 0.4 else "#ffff00" if value < 0.7 else "#ff0000"
-                    
-                    st.markdown(f"""
-                    <div style="display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; margin-bottom: 5px; 
-                                background: rgba(0,0,0,0.1); padding: 8px; border-radius: 5px;">
-                        <div style="color: #ffffff; font-family: monospace;">
-                            {name.replace('_', ' ').title()}
+                if detection_result and hasattr(detection_result, 'indicators'):
+                    for name, details in detection_result.indicators.items():
+                        value = details["value"]
+                        weight = details["weight"]
+                        
+                        # Determine color based on value
+                        value_color = "#00ff00" if value < 0.4 else "#ffff00" if value < 0.7 else "#ff0000"
+                        
+                        st.markdown(f"""
+                        <div style="display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; margin-bottom: 5px; 
+                                    background: rgba(0,0,0,0.1); padding: 8px; border-radius: 5px;">
+                            <div style="color: #ffffff; font-family: monospace;">
+                                {name.replace('_', ' ').title()}
+                            </div>
+                            <div style="color: {value_color}; font-family: monospace; font-weight: bold;">
+                                {value:.3f}
+                            </div>
+                            <div style="color: #00ffff; font-family: monospace;">
+                                {weight:.1f}
+                            </div>
                         </div>
-                        <div style="color: {value_color}; font-family: monospace; font-weight: bold;">
-                            {value:.3f}
-                        </div>
-                        <div style="color: #00ffff; font-family: monospace;">
-                            {weight:.1f}
-                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div style="padding: 10px; border-radius: 5px; background: rgba(0,10,20,0.5); margin-bottom: 15px;">
+                        <p style="color: #ff0000; font-family: monospace;">
+                            No detection indicators available due to analysis error.
+                        </p>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 # Display explanation
                 st.markdown("#### Analysis Explanation")
-                st.markdown(f"""
-                <div style="padding: 10px; border-radius: 5px; background: rgba(0,10,20,0.5); margin-bottom: 15px;">
-                    <p style="color: #ffffff; font-family: monospace;">
-                        {detection_result.explanation}
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
+                if detection_result and hasattr(detection_result, 'explanation'):
+                    st.markdown(f"""
+                    <div style="padding: 10px; border-radius: 5px; background: rgba(0,10,20,0.5); margin-bottom: 15px;">
+                        <p style="color: #ffffff; font-family: monospace;">
+                            {detection_result.explanation}
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div style="padding: 10px; border-radius: 5px; background: rgba(0,10,20,0.5); margin-bottom: 15px;">
+                        <p style="color: #ff0000; font-family: monospace;">
+                            Analysis explanation not available due to detection error.
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # ZSTEG Output (for PNG files)
                 if file_type.lower() == 'png':
