@@ -754,8 +754,8 @@ def create_strings_visualization(strings, max_strings=100):
         )
         return fig
     
-    # Calculate positions on circle
-    angles = np.linspace(0, 2*pi, num_strings, endpoint=False)
+    # Calculate positions along the bottom semi-circle only (like histogram)
+    angles = np.linspace(3*pi/4, 9*pi/4, num_strings, endpoint=False)  # Bottom arc
     
     # Create outer ring for texts
     outer_radius = 1.0
@@ -832,7 +832,7 @@ def create_strings_visualization(strings, max_strings=100):
         y=y_outer,
         mode="text",
         text=strings,
-        textposition="middle center",
+        textposition="bottom center",  # Position text at bottom of data points
         textfont=dict(
             family="monospace",
             size=8,
