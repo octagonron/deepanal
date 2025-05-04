@@ -1,11 +1,54 @@
-<svg width="800" height="100" xmlns="http://www.w3.org/2000/svg">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cyberpunk Background -->
   <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ff4b4b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#7b2bf9;stop-opacity:1" />
+    <linearGradient id="cyberGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#000033;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a0033;stop-opacity:1" />
     </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
   </defs>
-  <text x="50%" y="50%" font-family="Arial" font-size="48" fill="url(#gradient)" text-anchor="middle" alignment-baseline="middle">
-    DEEP ANAL: Steganography Analysis
-  </text>
+  
+  <!-- Background -->
+  <rect width="800" height="150" rx="10" ry="10" fill="url(#cyberGradient)" />
+  
+  <!-- Grid lines -->
+  <g stroke="#00ffff" stroke-width="0.5" opacity="0.3">
+    <!-- Horizontal lines -->
+    <line x1="0" y1="30" x2="800" y2="30" />
+    <line x1="0" y1="60" x2="800" y2="60" />
+    <line x1="0" y1="90" x2="800" y2="90" />
+    <line x1="0" y1="120" x2="800" y2="120" />
+    
+    <!-- Vertical lines -->
+    <line x1="100" y1="0" x2="100" y2="150" />
+    <line x1="200" y1="0" x2="200" y2="150" />
+    <line x1="300" y1="0" x2="300" y2="150" />
+    <line x1="400" y1="0" x2="400" y2="150" />
+    <line x1="500" y1="0" x2="500" y2="150" />
+    <line x1="600" y1="0" x2="600" y2="150" />
+    <line x1="700" y1="0" x2="700" y2="150" />
+  </g>
+  
+  <!-- Title -->
+  <text x="400" y="75" font-family="monospace" font-size="45" fill="#ff00ff" text-anchor="middle" filter="url(#neonGlow)">DEEP ANAL</text>
+  
+  <!-- Subtitle -->
+  <text x="400" y="110" font-family="monospace" font-size="20" fill="#00ffff" text-anchor="middle">Hardcore Stego Analysis</text>
+  
+  <!-- Decorative elements -->
+  <path d="M50,35 L80,35 L90,45 L80,55 L50,55 L40,45 Z" fill="none" stroke="#ff00ff" stroke-width="2" />
+  <path d="M750,35 L720,35 L710,45 L720,55 L750,55 L760,45 Z" fill="none" stroke="#ff00ff" stroke-width="2" />
+  
+  <circle cx="50" cy="45" r="5" fill="#00ffff" />
+  <circle cx="750" cy="45" r="5" fill="#00ffff" />
+  
+  <!-- Scanner effect -->
+  <line x1="0" y1="75" x2="800" y2="75" stroke="#ffff00" stroke-width="1" opacity="0.5" />
+  
+  <!-- Version -->
+  <text x="750" y="140" font-family="monospace" font-size="12" fill="#ffff00" text-anchor="end">v1.0</text>
 </svg>

@@ -87,3 +87,13 @@ def get_hex_dump(file_path, num_bytes=256):
         return output
     except Exception as e:
         return f"Error getting hex dump: {str(e)}"
+        
+def run_zsteg(file_path):
+    """Run zsteg with -a option on PNG files."""
+    try:
+        # Use a shell command since zsteg might not be in the standard PATH
+        cmd = f"zsteg -a \"{file_path}\""
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return result.stdout if result.stdout else result.stderr
+    except Exception as e:
+        return f"Error running zsteg: {str(e)}"

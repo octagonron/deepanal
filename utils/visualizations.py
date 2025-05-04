@@ -300,20 +300,18 @@ def create_entropy_plot(entropy_value, lower_staging=True):
         **create_cyberpunk_theme()
     )
     
-    # Add 2D annotation with entropy value for better visibility
+    # Add 2D annotation with entropy value at the bottom for better visibility
     fig.add_annotation(
-        x=0.98,  # Right side
-        y=0.85,  # Upper part
-        text=f"<b>ENTROPY VALUE:</b> {entropy_value:.6f}<br>"
-             f"<b>NORMALIZED:</b> {entropy_value/8:.4f}<br>"
-             f"<b>STATUS:</b> {'HIGH' if entropy_value > 7 else 'NORMAL' if entropy_value > 5 else 'LOW'}",
+        x=0.5,  # Centered horizontally
+        y=0.02,  # Very bottom
+        text=f"<b>ENTROPY VALUE:</b> {entropy_value:.6f} | <b>NORMALIZED:</b> {entropy_value/8:.4f} | <b>STATUS:</b> {'HIGH' if entropy_value > 7 else 'NORMAL' if entropy_value > 5 else 'LOW'}",
         showarrow=False,
         font=dict(
             family="monospace",
             size=14,
             color="#00ffff"
         ),
-        align="right",
+        align="center",
         bgcolor="rgba(0,0,30,0.7)",
         bordercolor="#ff00ff",
         borderwidth=2,
@@ -696,20 +694,18 @@ def create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True):
         plot_bgcolor="rgba(0,0,0,0)",
     )
     
-    # Add 2D annotation with key statistics for better visibility
+    # Add 2D annotation with key statistics at the bottom for better visibility
     fig.add_annotation(
-        x=0.98,  # Right side
-        y=0.85,  # Upper part
-        text=f"<b>MAX BYTE:</b> {int(max_byte)} ({max_byte:02X}h)<br>"
-             f"<b>PEAK FREQ:</b> {freq_max:.4f}<br>"
-             f"<b>ANOMALY INDEX:</b> {freq_std/freq_avg:.2f}",
+        x=0.5,  # Centered horizontally 
+        y=0.02,  # Very bottom
+        text=f"<b>MAX BYTE:</b> {int(max_byte)} ({max_byte:02X}h) | <b>PEAK FREQ:</b> {freq_max:.4f} | <b>ANOMALY INDEX:</b> {freq_std/freq_avg:.2f}",
         showarrow=False,
         font=dict(
             family="monospace",
             size=14,
             color="#00ffff"
         ),
-        align="right",
+        align="center",
         bgcolor="rgba(0,0,30,0.7)",
         bordercolor="#ff00ff",
         borderwidth=2,
