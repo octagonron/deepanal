@@ -19,11 +19,122 @@ from utils.stego_detector import analyze_image_for_steganography
 
 # Configure Streamlit page
 st.set_page_config(
-    page_title="DEEP ANAL: Steganography Analysis",
+    page_title="DEEP ANAL: Hardcore Stego Analysis",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Enable more immersive UI experience
+st.markdown("""
+<style>
+    /* Full cyberpunk theme overrides */
+    .stApp {
+        background-color: #000010;
+        background-image: 
+            radial-gradient(circle at 20% 90%, rgba(28, 0, 50, 0.4) 0%, transparent 20%),
+            radial-gradient(circle at 80% 10%, rgba(0, 50, 90, 0.4) 0%, transparent 20%);
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: rgba(0, 20, 40, 0.3);
+        border-radius: 10px;
+        padding: 5px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: rgba(30, 0, 60, 0.3);
+        border-radius: 5px;
+        color: #00ffff;
+        border: 1px solid rgba(0, 255, 255, 0.2);
+        transition: all 0.3s;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: rgba(80, 0, 160, 0.5);
+        border: 1px solid rgba(255, 0, 255, 0.4);
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: rgba(120, 0, 170, 0.6) !important;
+        border: 1px solid #ff00ff !important;
+    }
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {
+        color: #00ffff;
+        font-family: monospace;
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    h1 {
+        color: #ff00ff;
+        text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    }
+    /* Code blocks */
+    .stCodeBlock {
+        background-color: rgba(0, 20, 30, 0.6) !important;
+        border: 1px solid rgba(0, 255, 255, 0.2) !important;
+        border-radius: 10px !important;
+    }
+    /* Button styling */
+    .stButton button {
+        background-color: rgba(80, 0, 160, 0.6);
+        color: #00ffff;
+        border: 1px solid rgba(0, 255, 255, 0.4);
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    .stButton button:hover {
+        background-color: rgba(120, 0, 170, 0.8);
+        border: 1px solid #ff00ff;
+        color: #ffffff;
+    }
+    /* File uploader */
+    .stFileUploader {
+        background-color: rgba(0, 20, 40, 0.3);
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 255, 255, 0.2);
+    }
+    /* Dataframes */
+    .stDataFrame {
+        background-color: rgba(0, 15, 30, 0.5);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 255, 255, 0.2);
+        overflow: hidden;
+    }
+    /* Expander */
+    .stExpander {
+        background-color: rgba(20, 0, 40, 0.4);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 255, 255, 0.2);
+    }
+    /* Text input, number input, etc. */
+    .stTextInput input, .stNumberInput input, .stTextArea textarea {
+        background-color: rgba(0, 20, 30, 0.6);
+        color: #00ffff;
+        border: 1px solid rgba(0, 255, 255, 0.4);
+        border-radius: 5px;
+    }
+    .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
+        border: 1px solid #ff00ff;
+        box-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+    }
+    /* Metrics/KPIs */
+    .stMetric {
+        background-color: rgba(0, 20, 30, 0.4);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 255, 255, 0.2);
+        padding: 10px;
+    }
+    .stMetric label {
+        color: #00ffff;
+    }
+    .stMetric .css-1wivap2 {
+        color: #ff00ff;
+    }
+    /* Grid size and layout adjustments */
+    [data-testid="stVerticalBlock"] > div {
+        gap: 15px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Load custom CSS
 custom_css = """
@@ -95,17 +206,109 @@ def info_button(id_name, info_text):
     </div>
     """
 
-# Display banner
+# Display banner with logo reference
+from pathlib import Path
+
+# Check if the custom logo exists
+logo_path = Path("attached_assets/DEEPANAL.png")
+if logo_path.exists():
+    # Use the custom logo if available
+    st.markdown("""
+    <div style="text-align: center; background-color: rgba(0, 10, 30, 0.7); padding: 20px; 
+                border-radius: 10px; border: 1px solid #00ffff; margin-bottom: 20px; 
+                display: flex; flex-direction: column; align-items: center;">
+        <div style="max-width: 600px; margin-bottom: 10px;">
+            <img src="attached_assets/DEEPANAL.png" style="width: 100%; height: auto;">
+        </div>
+        <h3 style="color: #00ffff; font-family: monospace; margin-top: 5px;">
+            Hardcore Steganography Analysis
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    # Fallback to text-only banner if image is not available
+    st.markdown("""
+    <div style="text-align: center; background-color: rgba(0, 10, 30, 0.7); padding: 20px; 
+                border-radius: 10px; border: 1px solid #00ffff; margin-bottom: 20px;">
+        <h1 style="color: #ff00ff; font-family: monospace; text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);">
+            DEEP ANAL
+        </h1>
+        <h3 style="color: #00ffff; font-family: monospace;">
+            Hardcore Steganography Analysis
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+# Add holographic effect to page
 st.markdown("""
-<div style="text-align: center; background-color: rgba(0, 10, 30, 0.7); padding: 20px; 
-            border-radius: 10px; border: 1px solid #00ffff; margin-bottom: 20px;">
-    <h1 style="color: #ff00ff; font-family: monospace; text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);">
-        DEEP ANAL
-    </h1>
-    <h3 style="color: #00ffff; font-family: monospace;">
-        Hardcore Steganography Analysis
-    </h3>
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; 
+            background: linear-gradient(45deg, rgba(255,0,255,0.05) 0%, rgba(0,255,255,0.05) 100%), 
+                        repeating-linear-gradient(45deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 5px, rgba(0,255,255,0.03) 5px, rgba(255,0,255,0.03) 10px);">
 </div>
+
+<style>
+    /* 3D Grid Effect for Background - Matches concept art */
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(rgba(255,0,255,0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,0,255,0.05) 1px, transparent 1px);
+        background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+        background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+        transform: perspective(500px) rotateX(60deg);
+        transform-origin: center bottom;
+        pointer-events: none;
+        z-index: -1;
+    }
+    
+    /* Panel styling to match concept art */
+    .stTabs [data-baseweb="tab-panel"] {
+        background: rgba(0,10,30,0.7);
+        border: 1px solid #ff00ff;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 0 15px rgba(255,0,255,0.3);
+    }
+    
+    /* Make visualization containers more holographic */
+    .visualization-container {
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+            0 0 15px rgba(0,255,255,0.4),
+            inset 0 0 10px rgba(255,0,255,0.3);
+    }
+    
+    .visualization-container::before {
+        content: "";
+        position: absolute;
+        top: -10%;
+        left: -10%;
+        width: 120%;
+        height: 120%;
+        background: linear-gradient(45deg, 
+            rgba(255,0,255,0) 0%, 
+            rgba(255,0,255,0.1) 25%, 
+            rgba(0,255,255,0.1) 50%, 
+            rgba(255,0,255,0.1) 75%, 
+            rgba(255,0,255,0) 100%);
+        pointer-events: none;
+        animation: holographic-sweep 3s infinite linear;
+        z-index: 10;
+    }
+    
+    @keyframes holographic-sweep {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+</style>
 """, unsafe_allow_html=True)
 
 # Main content - File upload
