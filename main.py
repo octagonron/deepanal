@@ -10,7 +10,7 @@ from utils.file_analysis import (
 )
 from utils.visualizations import (
     create_entropy_plot, create_byte_frequency_plot, format_hex_dump,
-    create_detailed_view
+    create_detailed_view, create_strings_visualization
 )
 from utils.database import (
     save_analysis, get_recent_analyses, get_analysis_by_id, DB_AVAILABLE
@@ -539,7 +539,16 @@ if uploaded_file:
             st.markdown(f"### String Analysis {info_button('strings-info', strings_info)}", unsafe_allow_html=True)
             
             strings = extract_strings(temp_path)
-            st.code("\n".join(strings[:100]))
+            
+            # Create circular visualization for strings (matching concept art)
+            st.markdown('<div class="visualization-container">', unsafe_allow_html=True)
+            strings_viz = create_strings_visualization(strings, max_strings=100)
+            st.plotly_chart(strings_viz, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Still show plain text strings (expandable)
+            with st.expander("View Extracted Strings (Text Format)"):
+                st.code("\n".join(strings[:100]))
 
             # File Structure with info button
             structure_info = "File structure analysis examines the binary structure of the file to find embedded files, abnormal patterns, or hidden data streams."
@@ -620,7 +629,16 @@ if uploaded_file:
                 st.markdown(f"### String Analysis {info_button('strings-info', strings_info)}", unsafe_allow_html=True)
                 
                 strings = extract_strings(temp_path)
-                st.code("\n".join(strings[:100]))
+                
+                # Create circular visualization for strings (matching concept art)
+                st.markdown('<div class="visualization-container">', unsafe_allow_html=True)
+                strings_viz = create_strings_visualization(strings, max_strings=100)
+                st.plotly_chart(strings_viz, use_container_width=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Still show plain text strings (expandable)
+                with st.expander("View Extracted Strings (Text Format)"):
+                    st.code("\n".join(strings[:100]))
             
             with col2:
                 # File metadata with info button

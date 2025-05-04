@@ -716,6 +716,214 @@ def create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True):
     
     return fig
 
+def create_strings_visualization(strings, max_strings=100):
+    """
+    Create a circular cyberpunk visualization for extracted strings.
+    
+    Args:
+        strings: List of extracted strings
+        max_strings: Maximum number of strings to include
+    
+    Returns:
+        Plotly figure object
+    """
+    import plotly.graph_objects as go
+    import numpy as np
+    from math import pi, cos, sin
+    
+    # Limit number of strings
+    strings = strings[:max_strings]
+    num_strings = len(strings)
+    
+    if num_strings == 0:
+        # Create empty visualization with message
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No strings found",
+            x=0.5, y=0.5,
+            xref="paper", yref="paper",
+            showarrow=False,
+            font=dict(size=20, color="#ff00ff")
+        )
+        fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            height=600,
+            margin=dict(l=0, r=0, t=0, b=0)
+        )
+        return fig
+    
+    # Calculate positions on circle
+    angles = np.linspace(0, 2*pi, num_strings, endpoint=False)
+    
+    # Create outer ring for texts
+    outer_radius = 1.0
+    x_outer = [outer_radius * cos(angle) for angle in angles]
+    y_outer = [outer_radius * sin(angle) for angle in angles]
+    
+    # Create inner rings with different radii for visual effect
+    num_rings = 3
+    inner_traces = []
+    
+    for i in range(num_rings):
+        inner_radius = 0.3 + (0.5 * i / num_rings)
+        opacity = 0.2 + (0.5 * i / num_rings)
+        
+        # Generate more points for smooth circles
+        circle_points = 500
+        circle_angles = np.linspace(0, 2*pi, circle_points, endpoint=True)
+        x_ring = [inner_radius * cos(angle) for angle in circle_angles]
+        y_ring = [inner_radius * sin(angle) for angle in circle_angles]
+        
+        # Add ring trace
+        ring_trace = go.Scatter(
+            x=x_ring, 
+            y=y_ring,
+            mode="lines",
+            line=dict(
+                color=f"rgba({255-i*30},{0},{255},0.4)",
+                width=2
+            ),
+            hoverinfo="none",
+            showlegend=False
+        )
+        inner_traces.append(ring_trace)
+    
+    # Create traces for connecting lines
+    line_traces = []
+    
+    # Add connecting lines between center and outer points
+    for i in range(num_strings):
+        # Get a value from 0-1 based on the string length or content
+        # This will be used to determine the line's endpoint radius
+        string_val = min(1.0, len(strings[i]) / 50)  # Normalize by max expected length
+        
+        # Calculate endpoint radius (varies based on string properties)
+        endpoint_radius = 0.3 + string_val * 0.5
+        
+        x_line = [0, endpoint_radius * cos(angles[i]), x_outer[i]]
+        y_line = [0, endpoint_radius * sin(angles[i]), y_outer[i]]
+        
+        # Color based on string content
+        color_val = hash(strings[i]) % 1000 / 1000  # Get a hash-based value between 0-1
+        
+        # Create a color gradient from pink to cyan
+        r = int(255 * (1 - color_val))
+        g = int(100 * color_val)
+        b = int(255 * color_val)
+        
+        line_trace = go.Scatter(
+            x=x_line,
+            y=y_line,
+            mode="lines",
+            line=dict(
+                color=f"rgba({r},{g},{b},0.6)",
+                width=1.5
+            ),
+            hoverinfo="none",
+            showlegend=False
+        )
+        line_traces.append(line_trace)
+    
+    # Create traces for text labels
+    text_trace = go.Scatter(
+        x=x_outer,
+        y=y_outer,
+        mode="text",
+        text=strings,
+        textposition="middle center",
+        textfont=dict(
+            family="monospace",
+            size=8,
+            color="#00ffff"
+        ),
+        hoverinfo="text",
+        hovertext=strings,
+        showlegend=False
+    )
+    
+    # Create central point
+    center_trace = go.Scatter(
+        x=[0],
+        y=[0],
+        mode="markers",
+        marker=dict(
+            size=15,
+            color="#ff00ff",
+            symbol="circle",
+            line=dict(
+                color="#00ffff",
+                width=2
+            )
+        ),
+        hoverinfo="text",
+        hovertext="STRINGS",
+        showlegend=False
+    )
+    
+    # Create pulsing effect with multiple circles
+    pulse_traces = []
+    num_pulses = 3
+    
+    for i in range(num_pulses):
+        pulse_trace = go.Scatter(
+            x=[0],
+            y=[0],
+            mode="markers",
+            marker=dict(
+                size=20 + i*10,
+                color=f"rgba(255,0,255,{0.3 - i*0.1})",
+                symbol="circle"
+            ),
+            hoverinfo="none",
+            showlegend=False
+        )
+        pulse_traces.append(pulse_trace)
+    
+    # Combine all traces
+    fig = go.Figure(data=inner_traces + line_traces + [text_trace, center_trace] + pulse_traces)
+    
+    # Update layout
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        height=600,
+        margin=dict(l=0, r=0, t=0, b=0),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False,
+            range=[-1.2, 1.2]
+        ),
+        yaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False,
+            scaleanchor="x",
+            scaleratio=1,
+            range=[-1.2, 1.2]
+        )
+    )
+    
+    # Add annotation explaining the visualization
+    fig.add_annotation(
+        text="STRINGS ANALYSIS",
+        x=0, y=0,
+        xref="x", yref="y",
+        showarrow=False,
+        font=dict(
+            family="monospace",
+            size=12,
+            color="#ffffff"
+        ),
+        align="center",
+        yshift=-25
+    )
+    
+    return fig
+
 def format_hex_dump(hex_dump):
     """Format hex dump with cyberpunk styling."""
     lines = hex_dump.split('\n')
