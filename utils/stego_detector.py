@@ -57,14 +57,16 @@ class DetectionResult:
     
     def generate_explanation(self):
         """Generate a human-readable explanation of the results."""
-        if self.likelihood < 0.2:
+        if self.likelihood < 0.1:
             main_finding = "No significant indicators of steganography detected. The image appears normal."
-        elif self.likelihood < 0.5:
+        elif self.likelihood < 0.3:
             main_finding = "Some minor irregularities detected, but they could be due to normal image processing."
+        elif self.likelihood < 0.6:
+            main_finding = "Several indicators suggest possible hidden data. The image shows patterns that may be consistent with steganographic techniques."
         elif self.likelihood < 0.8:
-            main_finding = "Several indicators suggest the presence of hidden data. The image shows patterns consistent with steganographic techniques."
+            main_finding = "High likelihood of hidden data detected. Multiple indicators suggest steganographic content."
         else:
-            main_finding = "Strong evidence of hidden data. The image exhibits clear signs of steganographic manipulation."
+            main_finding = "Very strong evidence of hidden data. The image exhibits clear signs of steganographic manipulation."
         
         # Add details about the specific indicators
         indicator_details = []
@@ -183,8 +185,30 @@ def detect_lsb_steganography(pixels):
     g_entropy = calculate_entropy(lsb_g)
     b_entropy = calculate_entropy(lsb_b)
     
-    # Combine metrics - lower bias, more runs, and higher entropy indicate random distribution
-    # which could suggest hidden data
+    # Also analyze the distribution of pairs of adjacent bits
+    # This can detect more sophisticated steganography methods
+    pair_analysis_r = analyze_bit_pairs(lsb_r)
+    pair_analysis_g = analyze_bit_pairs(lsb_g)
+    pair_analysis_b = analyze_bit_pairs(lsb_b)
+    
+    # Check for patterns in different bit planes (not just LSB)
+    second_bit_plane_r = (pixels[:, :, 0] // 2) % 2
+    second_bit_plane_g = (pixels[:, :, 1] // 2) % 2
+    second_bit_plane_b = (pixels[:, :, 2] // 2) % 2
+    
+    # Calculate correlation between LSB and 2nd bit plane
+    # Low correlation might indicate hidden data
+    r_correlation = np.corrcoef(lsb_r.flatten(), second_bit_plane_r.flatten())[0, 1]
+    g_correlation = np.corrcoef(lsb_g.flatten(), second_bit_plane_g.flatten())[0, 1]
+    b_correlation = np.corrcoef(lsb_b.flatten(), second_bit_plane_b.flatten())[0, 1]
+    
+    # Convert correlations to indicators (lower correlation = higher likelihood)
+    r_corr_indicator = 1 - abs(r_correlation)
+    g_corr_indicator = 1 - abs(g_correlation)
+    b_corr_indicator = 1 - abs(b_correlation)
+    
+    # Combine metrics - lower bias, more runs, higher entropy, and lower bit-plane correlation
+    # indicate potential hidden data
     
     # Normalize entropy to 0-1 range (max entropy for binary is 1.0)
     r_entropy_norm = r_entropy 
@@ -192,17 +216,47 @@ def detect_lsb_steganography(pixels):
     b_entropy_norm = b_entropy
     
     # For bias, lower value means more likely steganography
-    r_indicator = (1 - r_bias) * 0.5 + r_entropy_norm * 0.3 + r_runs * 0.2
-    g_indicator = (1 - g_bias) * 0.5 + g_entropy_norm * 0.3 + g_runs * 0.2
-    b_indicator = (1 - b_bias) * 0.5 + b_entropy_norm * 0.3 + b_runs * 0.2
+    r_indicator = (1 - r_bias) * 0.3 + r_entropy_norm * 0.3 + r_runs * 0.2 + pair_analysis_r * 0.1 + r_corr_indicator * 0.1
+    g_indicator = (1 - g_bias) * 0.3 + g_entropy_norm * 0.3 + g_runs * 0.2 + pair_analysis_g * 0.1 + g_corr_indicator * 0.1
+    b_indicator = (1 - b_bias) * 0.3 + b_entropy_norm * 0.3 + b_runs * 0.2 + pair_analysis_b * 0.1 + b_corr_indicator * 0.1
     
     # Take the maximum indicator as our result
     lsb_likelihood = max(r_indicator, g_indicator, b_indicator)
     
-    # Scale to make the result more decisive
-    lsb_likelihood = scale_likelihood(lsb_likelihood, sensitivity=1.5)
+    # Scale to make the result more decisive and boost sensitivity
+    lsb_likelihood = scale_likelihood(lsb_likelihood, sensitivity=2.5)
     
     return lsb_likelihood
+
+def analyze_bit_pairs(bits):
+    """
+    Analyze the distribution of pairs of adjacent bits.
+    Unusual pair distributions may indicate steganography.
+    
+    Args:
+        bits: Numpy array of bit values (0 or 1)
+    
+    Returns:
+        Likelihood score based on bit pair analysis (0-1)
+    """
+    # Count the frequency of each pair type: 00, 01, 10, 11
+    pairs = np.zeros(4)
+    for i in range(len(bits) - 1):
+        pair_value = bits[i] * 2 + bits[i+1]
+        pairs[int(pair_value)] += 1
+    
+    # Normalize to get distribution
+    total = np.sum(pairs)
+    if total > 0:
+        pairs = pairs / total
+    
+    # For true random data, each pair should be roughly equally likely (~0.25)
+    # Calculate deviation from expected distribution
+    expected = np.array([0.25, 0.25, 0.25, 0.25])
+    deviation = np.sum(np.abs(pairs - expected)) / 2  # Normalize to [0,1]
+    
+    # Higher deviation means more suspicious
+    return deviation
 
 def analyze_histogram(pixels):
     """
@@ -658,8 +712,12 @@ def scale_likelihood(value, center=0.5, sensitivity=1.0):
     Returns:
         Scaled likelihood value (0-1)
     """
-    # Apply sigmoid-like scaling centered at the specified point
-    scaled = 1 / (1 + np.exp(-sensitivity * (value - center) * 10))
+    # Increase the value first to make detection more aggressive
+    # This makes the tool more likely to report potential steganography
+    boosted_value = value * 1.7
+    
+    # Apply sigmoid-like scaling centered at the specified point with higher sensitivity
+    scaled = 1 / (1 + np.exp(-sensitivity * 2.0 * (boosted_value - center) * 10))
     
     # Ensure the result is in the range [0, 1]
     return max(0, min(1, scaled))
