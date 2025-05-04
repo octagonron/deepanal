@@ -19,7 +19,7 @@ from utils.stego_detector import analyze_image_for_steganography
 
 # Configure Streamlit page
 st.set_page_config(
-    page_title="DEEP ANAL: Hardcore Stego Analysis",
+    page_title="DEEP ANAL: Steganography Analysis",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -221,7 +221,7 @@ if logo_path.exists():
             <img src="attached_assets/DEEPANAL.png" style="width: 100%; height: auto;">
         </div>
         <h3 style="color: #00ffff; font-family: monospace; margin-top: 5px;">
-            Hardcore Steganography Analysis
+            Steganography Analysis
         </h3>
     </div>
     """, unsafe_allow_html=True)
@@ -234,7 +234,7 @@ else:
             DEEP ANAL
         </h1>
         <h3 style="color: #00ffff; font-family: monospace;">
-            Hardcore Steganography Analysis
+            Steganography Analysis
         </h3>
     </div>
     """, unsafe_allow_html=True)
