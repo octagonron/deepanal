@@ -716,9 +716,9 @@ def create_byte_frequency_plot(bytes_values, frequencies, lower_staging=True):
     
     return fig
 
-def create_strings_visualization(strings, max_strings=100):
+def create_strings_visualization(strings, max_strings=300):
     """
-    Create a circular cyberpunk visualization for extracted strings.
+    Create a cyberpunk word map (word cloud) visualization for extracted strings.
     
     Args:
         strings: List of extracted strings
@@ -729,21 +729,25 @@ def create_strings_visualization(strings, max_strings=100):
     """
     import plotly.graph_objects as go
     import numpy as np
-    from math import pi, cos, sin
+    from math import pi, cos, sin, sqrt
+    import random
     
-    # Limit number of strings
-    strings = strings[:max_strings]
-    num_strings = len(strings)
+    # Limit number of strings and filter out very short strings for the cloud
+    filtered_strings = [s for s in strings if len(s) > 1]
+    if len(filtered_strings) > max_strings:
+        filtered_strings = filtered_strings[:max_strings]
+    
+    num_strings = len(filtered_strings)
     
     if num_strings == 0:
         # Create empty visualization with message
         fig = go.Figure()
         fig.add_annotation(
-            text="No strings found",
+            text="NO STRINGS FOUND",
             x=0.5, y=0.5,
             xref="paper", yref="paper",
             showarrow=False,
-            font=dict(size=20, color="#ff00ff")
+            font=dict(family="monospace", size=20, color="#ff00ff")
         )
         fig.update_layout(
             template="plotly_dark",
@@ -754,135 +758,228 @@ def create_strings_visualization(strings, max_strings=100):
         )
         return fig
     
-    # Calculate positions along the bottom semi-circle only (like histogram)
-    angles = np.linspace(3*pi/4, 9*pi/4, num_strings, endpoint=False)  # Bottom arc
+    # Create figure
+    fig = go.Figure()
     
-    # Create outer ring for texts
-    outer_radius = 1.0
-    x_outer = [outer_radius * cos(angle) for angle in angles]
-    y_outer = [outer_radius * sin(angle) for angle in angles]
+    # Count string frequencies for font sizing
+    string_counts = {}
+    for s in filtered_strings:
+        s_upper = s.upper()  # Convert to uppercase for consistency
+        if s_upper in string_counts:
+            string_counts[s_upper] += 1
+        else:
+            string_counts[s_upper] = 1
     
-    # Create inner rings with different radii for visual effect
-    num_rings = 3
-    inner_traces = []
+    # Get unique strings
+    unique_strings = list(string_counts.keys())
     
-    for i in range(num_rings):
-        inner_radius = 0.3 + (0.5 * i / num_rings)
-        opacity = 0.2 + (0.5 * i / num_rings)
+    # Sort strings by frequency for better placement (more frequent = more central)
+    sorted_strings = sorted(unique_strings, key=lambda s: string_counts[s], reverse=True)
+    
+    # Define color palette for cyberpunk aesthetic
+    colors = [
+        "#ff00ff",  # Magenta
+        "#00ffff",  # Cyan
+        "#ffff00",  # Yellow
+        "#ff007f",  # Pink
+        "#7f00ff",  # Purple
+        "#00ff7f",  # Teal
+    ]
+    
+    # Create outer ring for visual boundary
+    circle_points = 500
+    circle_angles = np.linspace(0, 2*pi, circle_points, endpoint=True)
+    radius = 1.0
+    x_circle = [radius * cos(angle) for angle in circle_angles]
+    y_circle = [radius * sin(angle) for angle in circle_angles]
+    
+    fig.add_trace(go.Scatter(
+        x=x_circle,
+        y=y_circle,
+        mode="lines",
+        line=dict(
+            color="#ff00ff",
+            width=3
+        ),
+        hoverinfo="none",
+        showlegend=False
+    ))
+    
+    # Add glowing effect to outer ring
+    for i in range(3):
+        glow_radius = radius * (1 + 0.02 * (i+1))
+        x_glow = [glow_radius * cos(angle) for angle in circle_angles]
+        y_glow = [glow_radius * sin(angle) for angle in circle_angles]
         
-        # Generate more points for smooth circles
-        circle_points = 500
-        circle_angles = np.linspace(0, 2*pi, circle_points, endpoint=True)
-        x_ring = [inner_radius * cos(angle) for angle in circle_angles]
-        y_ring = [inner_radius * sin(angle) for angle in circle_angles]
-        
-        # Add ring trace
-        ring_trace = go.Scatter(
-            x=x_ring, 
-            y=y_ring,
+        fig.add_trace(go.Scatter(
+            x=x_glow,
+            y=y_glow,
             mode="lines",
             line=dict(
-                color=f"rgba({255-i*30},{0},{255},0.4)",
+                color=f"rgba(0,255,255,{0.3 - i*0.1})" if i % 2 == 0 else f"rgba(255,0,255,{0.3 - i*0.1})",
                 width=2
             ),
             hoverinfo="none",
             showlegend=False
-        )
-        inner_traces.append(ring_trace)
+        ))
     
-    # Create traces for connecting lines
-    line_traces = []
-    
-    # Add connecting lines between center and outer points
-    for i in range(num_strings):
-        # Get a value from 0-1 based on the string length or content
-        # This will be used to determine the line's endpoint radius
-        string_val = min(1.0, len(strings[i]) / 50)  # Normalize by max expected length
-        
-        # Calculate endpoint radius (varies based on string properties)
-        endpoint_radius = 0.3 + string_val * 0.5
-        
-        x_line = [0, endpoint_radius * cos(angles[i]), x_outer[i]]
-        y_line = [0, endpoint_radius * sin(angles[i]), y_outer[i]]
-        
-        # Color based on string content
-        color_val = hash(strings[i]) % 1000 / 1000  # Get a hash-based value between 0-1
-        
-        # Create a color gradient from pink to cyan
-        r = int(255 * (1 - color_val))
-        g = int(100 * color_val)
-        b = int(255 * color_val)
-        
-        line_trace = go.Scatter(
-            x=x_line,
-            y=y_line,
-            mode="lines",
-            line=dict(
-                color=f"rgba({r},{g},{b},0.6)",
-                width=1.5
-            ),
-            hoverinfo="none",
-            showlegend=False
-        )
-        line_traces.append(line_trace)
-    
-    # Create traces for text labels
-    text_trace = go.Scatter(
-        x=x_outer,
-        y=y_outer,
-        mode="text",
-        text=strings,
-        textposition="bottom center",  # Position text at bottom of data points
-        textfont=dict(
-            family="monospace",
-            size=8,
-            color="#00ffff"
-        ),
-        hoverinfo="text",
-        hovertext=strings,
-        showlegend=False
-    )
-    
-    # Create central point
-    center_trace = go.Scatter(
+    # Create main "STRINGS" title in center
+    fig.add_trace(go.Scatter(
         x=[0],
         y=[0],
-        mode="markers",
-        marker=dict(
-            size=15,
-            color="#ff00ff",
-            symbol="circle",
-            line=dict(
-                color="#00ffff",
-                width=2
-            )
+        mode="text",
+        text=["STRINGS"],
+        textfont=dict(
+            family="monospace",
+            size=42,
+            color="#ff00ff"
         ),
-        hoverinfo="text",
-        hovertext="STRINGS",
+        hoverinfo="none",
         showlegend=False
-    )
+    ))
     
-    # Create pulsing effect with multiple circles
-    pulse_traces = []
-    num_pulses = 3
+    # Add subtitle text
+    fig.add_trace(go.Scatter(
+        x=[0],
+        y=[-0.2],
+        mode="text",
+        text=["A REFINED TEXTED TEXT"],
+        textfont=dict(
+            family="monospace",
+            size=14,
+            color="#ffffff"
+        ),
+        hoverinfo="none",
+        showlegend=False
+    ))
     
-    for i in range(num_pulses):
-        pulse_trace = go.Scatter(
-            x=[0],
-            y=[0],
-            mode="markers",
-            marker=dict(
-                size=20 + i*10,
-                color=f"rgba(255,0,255,{0.3 - i*0.1})",
-                symbol="circle"
-            ),
-            hoverinfo="none",
-            showlegend=False
+    fig.add_trace(go.Scatter(
+        x=[0],
+        y=[-0.35],
+        mode="text",
+        text=["IN STEGOGRAPHIC ANALYSIS"],
+        textfont=dict(
+            family="monospace",
+            size=12,
+            color="#00ffff"
+        ),
+        hoverinfo="none",
+        showlegend=False
+    ))
+    
+    # Create word cloud layout
+    # Fix random seed for reproducible layout
+    random.seed(42)
+    np.random.seed(42)
+    
+    # Track placed words to avoid overlap
+    placed_words = []
+    
+    # Create word placement with different sizes and colors
+    for i, string in enumerate(sorted_strings):
+        # Skip common words and very short ones
+        if string.lower() in ['the', 'and', 'a', 'of', 'in', 'to'] or len(string) <= 1:
+            continue
+            
+        count = string_counts[string]
+        
+        # Scale font size based on frequency and length
+        # More frequent words and longer words get bigger fonts
+        base_size = 8 + min(20, count * 3 + len(string) // 3)
+        
+        # More frequent words should be closer to center
+        freq_factor = min(1.0, count / 10)
+        max_radius = 0.9 * (1 - freq_factor * 0.7)
+        min_radius = 0.1
+        
+        # Try multiple positions to find one without overlap
+        for attempt in range(50):
+            # Get random position within the circle
+            if i < 5 and attempt == 0:
+                # Place most frequent words in specific positions
+                angles = [0, pi/4, pi/2, 3*pi/4, pi]
+                r = 0.2 + (i * 0.1)
+                theta = angles[i % len(angles)]
+            else:
+                # Random position for other words
+                r = min_radius + (max_radius - min_radius) * random.random()
+                theta = 2 * pi * random.random()
+            
+            x = r * cos(theta)
+            y = r * sin(theta)
+            
+            # Choose color based on position in the circle
+            color_idx = int((theta / (2*pi)) * len(colors))
+            color = colors[color_idx % len(colors)]
+            
+            # Add random rotation for some words
+            rotation_options = [0, 0, 0, 15, -15, 30, -30, 45, -45, 90, -90]
+            rotation = rotation_options[hash(string) % len(rotation_options)]
+            
+            # Check for overlap with already placed words
+            overlap = False
+            for px, py, ps in placed_words:
+                # Calculate distance between word centers
+                distance = sqrt((px - x)**2 + (py - y)**2)
+                # Minimum distance is based on font sizes
+                min_distance = (base_size + ps) / 100
+                if distance < min_distance:
+                    overlap = True
+                    break
+            
+            if not overlap:
+                placed_words.append((x, y, base_size))
+                
+                # Add word to figure
+                fig.add_trace(go.Scatter(
+                    x=[x],
+                    y=[y],
+                    mode="text",
+                    text=[string],
+                    textfont=dict(
+                        family="monospace",
+                        size=base_size,
+                        color=color
+                    ),
+                    textposition="middle center",
+                    hoverinfo="text",
+                    hovertext=f"{string} (found {count} times)",
+                    showlegend=False
+                ))
+                
+                # Apply rotation if needed
+                if rotation != 0:
+                    fig.data[-1].textangle = rotation
+                
+                break
+    
+    # Create background grid effect
+    grid_spacing = 0.1
+    grid_color = "rgba(0,255,255,0.1)"
+    
+    # Vertical grid lines
+    for x in np.arange(-1.0, 1.1, grid_spacing):
+        fig.add_shape(
+            type="line",
+            x0=x, y0=-1.0,
+            x1=x, y1=1.0,
+            line=dict(
+                color=grid_color,
+                width=1
+            )
         )
-        pulse_traces.append(pulse_trace)
     
-    # Combine all traces
-    fig = go.Figure(data=inner_traces + line_traces + [text_trace, center_trace] + pulse_traces)
+    # Horizontal grid lines
+    for y in np.arange(-1.0, 1.1, grid_spacing):
+        fig.add_shape(
+            type="line",
+            x0=-1.0, y0=y,
+            x1=1.0, y1=y,
+            line=dict(
+                color=grid_color,
+                width=1
+            )
+        )
     
     # Update layout
     fig.update_layout(
@@ -905,21 +1002,6 @@ def create_strings_visualization(strings, max_strings=100):
             scaleratio=1,
             range=[-1.2, 1.2]
         )
-    )
-    
-    # Add annotation explaining the visualization
-    fig.add_annotation(
-        text="STRINGS ANALYSIS",
-        x=0, y=0,
-        xref="x", yref="y",
-        showarrow=False,
-        font=dict(
-            family="monospace",
-            size=12,
-            color="#ffffff"
-        ),
-        align="center",
-        yshift=-25
     )
     
     return fig
