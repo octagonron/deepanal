@@ -6,7 +6,7 @@ packages = ["freetype", "glibcLocales", "lcms2", "libimagequant", "libjpeg", "li
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "streamlit run simple_test.py --server.address=0.0.0.0 --server.port=5000"]
+run = ["sh", "-c", "streamlit run minimal.py --server.address=0.0.0.0 --server.port=5000"]
 
 [workflows]
 runButton = "Project"
@@ -20,65 +20,18 @@ author = "agent"
 task = "workflow.run"
 args = "Streamlit App"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Streamlit Test"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Streamlit Simple Test"
-
 [[workflows.workflow]]
 name = "Streamlit App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run main_fixed.py --server.address=0.0.0.0 --server.port=8080"
-waitForPort = 8080
-
-[[workflows.workflow]]
-name = "Streamlit App New"
-author = 30437669
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "streamlit run minimal.py --server.address=0.0.0.0 --server.port=5000"
-
-[[workflows.workflow]]
-name = "Streamlit Test"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "streamlit run simple_test.py --server.address=0.0.0.0 --server.port=5000"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Streamlit Simple Test"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "streamlit run simple_test.py --server.address=0.0.0.0 --server.port=8501"
-waitForPort = 8501
+args = "streamlit run main.py --server.address=0.0.0.0 --server.port=5001"
+waitForPort = 5001
 
 [[ports]]
 localPort = 5000
-externalPort = 80
 
 [[ports]]
 localPort = 5001
-
-[[ports]]
-localPort = 5002
-externalPort = 3000
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
-[[ports]]
-localPort = 8501
-externalPort = 3001
+externalPort = 80

@@ -930,7 +930,7 @@ def create_strings_visualization(strings, max_strings=300):
             if not overlap:
                 placed_words.append((x, y, base_size))
                 
-                # Add word to figure - apply rotation directly in the trace
+                # Add word to figure
                 fig.add_trace(go.Scatter(
                     x=[x],
                     y=[y],
@@ -944,9 +944,12 @@ def create_strings_visualization(strings, max_strings=300):
                     textposition="middle center",
                     hoverinfo="text",
                     hovertext=f"{string} (found {count} times)",
-                    showlegend=False,
-                    textangle=rotation
+                    showlegend=False
                 ))
+                
+                # Apply rotation if needed
+                if rotation != 0:
+                    fig.data[-1].textangle = rotation
                 
                 break
     

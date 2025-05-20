@@ -1,10 +1,13 @@
 import streamlit as st
 
-st.title("DEEP ANAL: Minimal Test")
-st.write("This is a minimal test app to verify Streamlit is working correctly.")
+st.title("DEEP ANAL: Steganography Analysis")
+st.write("Minimal test app")
 
-st.success("If you can see this, the basic app is working!")
+# File upload
+uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
 
-# Add a simple button
-if st.button("Click me"):
-    st.write("Button was clicked!")
+if uploaded_file is not None:
+    st.write(f"Filename: {uploaded_file.name}")
+    st.image(uploaded_file, caption=uploaded_file.name)
+else:
+    st.write("Please upload an image file")
