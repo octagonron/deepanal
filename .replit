@@ -6,7 +6,7 @@ packages = ["freetype", "glibcLocales", "lcms2", "libimagequant", "libjpeg", "li
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "streamlit run test_strings.py --server.address=0.0.0.0 --server.port=5002"]
+run = ["sh", "-c", "streamlit run simple_test.py --server.address=0.0.0.0 --server.port=5000"]
 
 [workflows]
 runButton = "Project"
@@ -23,6 +23,10 @@ args = "Streamlit App"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Streamlit Test"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Streamlit Simple Test"
 
 [[workflows.workflow]]
 name = "Streamlit App"
@@ -48,8 +52,17 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run test_strings.py --server.address=0.0.0.0 --server.port=5002"
-waitForPort = 5002
+args = "streamlit run simple_test.py --server.address=0.0.0.0 --server.port=5000"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Streamlit Simple Test"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "streamlit run simple_test.py --server.address=0.0.0.0 --server.port=8501"
+waitForPort = 8501
 
 [[ports]]
 localPort = 5000
@@ -65,3 +78,7 @@ externalPort = 3000
 [[ports]]
 localPort = 8080
 externalPort = 8080
+
+[[ports]]
+localPort = 8501
+externalPort = 3001
