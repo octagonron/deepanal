@@ -9,7 +9,7 @@ deploymentTarget = "autoscale"
 run = ["sh", "-c", "streamlit run minimal.py --server.address=0.0.0.0 --server.port=5000"]
 
 [workflows]
-runButton = "Project"
+runButton = "Streamlit App New"
 
 [[workflows.workflow]]
 name = "Project"
@@ -28,6 +28,15 @@ author = "agent"
 task = "shell.exec"
 args = "streamlit run main.py --server.address=0.0.0.0 --server.port=5001"
 waitForPort = 5001
+
+[[workflows.workflow]]
+name = "Streamlit App New"
+author = 30437669
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "streamlit run minimal.py --server.address=0.0.0.0 --server.port=5000"
 
 [[ports]]
 localPort = 5000
